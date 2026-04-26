@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NousDeux 💑</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Nunito', sans-serif; background: #f8f5f2; color: #2d2a27; min-height: 100vh; }
+
+  .auth-screen { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 2rem; }
+  .auth-card { background: white; border-radius: 24px; padding: 2.5rem; width: 100%; max-width: 400px; box-shadow: 0 4px 40px rgba(0,0,0,0.08); }
+  .auth-logo { text-align: center; margin-bottom: 2rem; }
+  .auth-logo h1 { font-size: 2rem; font-weight: 800; color: #e8625a; }
+  .auth-logo p { color: #888; font-size: 0.9rem; margin-top: 4px; }
+  .auth-tabs { display: flex; background: #f8f5f2; border-radius: 12px; padding: 4px; margin-bottom: 1.5rem; }
+  .auth-tab { flex: 1; text-align: center; padding: 8px; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 0.9rem; color: #888; transition: all 0.2s; border: none; background: none; }
+  .auth-tab.active { background: white; color: #e8625a; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  .field { margin-bottom: 1rem; }
+  .field label { display: block; font-size: 0.85rem; font-weight: 700; color: #555; margin-bottom: 6px; }
+  .field input { width: 100%; padding: 12px 16px; border: 1.5px solid #e8e4e0; border-radius: 12px; font-family: inherit; font-size: 0.95rem; outline: none; transition: border-color 0.2s; }
+  .field input:focus { border-color: #e8625a; }
+  .btn-primary { width: 100%; padding: 14px; background: #e8625a; color: white; border: none; border-radius: 14px; font-family: inherit; font-size: 1rem; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+  .btn-primary:hover { background: #d44f47; }
+  .btn-primary:disabled { background: #ccc; cursor: not-allowed; }
+  .msg { padding: 10px 14px; border-radius: 10px; font-size: 0.85rem; margin-bottom: 1rem; font-weight: 600; }
+  .msg.error { background: #fdeaea; color: #c0392b; }
+  .msg.success { background: #eafaf1; color: #1e8449; }
+
+  .app { display: none; flex-direction: column; min-height: 100vh; }
+  .app.visible { display: flex; }
+  .topbar { background: white; padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 12px rgba(0,0,0,0.06); position: sticky; top: 0; z-index: 100; }
+  .topbar h1 { font-size: 1.4rem; font-weight: 800; color: #e8625a; }
+  .topbar-right { display: flex; align-items: center; gap: 12px; }
+  .user-badge { background: #fdf0ef; color: #e8625a; border-radius: 20px; padding: 6px 14px; font-size: 0.8rem; font-weight: 700; }
+  .logout-btn { background: none; border: 1.5px solid #e8e4e0; border-radius: 10px; padding: 6px 12px; font-family: inherit; font-size: 0.8rem; color: #888; cursor: pointer; font-weight: 600; }
+  .logout-btn:hover { border-color: #e8625a; color: #e8625a; }
+  .main-content { flex: 1; padding: 1.5rem; max-width: 900px; width: 100%; margin: 0 auto; }
+  .nav-tabs { display: flex; gap: 6px; margin-bottom: 1.5rem; overflow-x: auto; padding-bottom: 4px; }
+  .nav-tab { padding: 8px 16px; border-radius: 20px; border: none; background: white; font-family: inherit; font-size: 0.85rem; font-weight: 700; cursor: pointer; color: #888; white-space: nowrap; transition: all 0.2s; }
+  .nav-tab.active { background: #e8625a; color: white; }
+
+  .section-card { background: white; border-radius: 20px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 2px 16px rgba(0,0,0,0.05); }
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.2rem; }
+  .section-title { font-size: 1.1rem; font-weight: 800; color: #2d2a27; }
+  .add-btn { background: #e8625a; color: white; border: none; border-radius: 10px; padding: 8px 16px; font-family: inherit; font-size: 0.85rem; font-weight: 700; cursor: pointer; }
+  .add-btn:hover { background: #d44f47; }
+
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 200; align-items: center; justify-content: center; padding: 1rem; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: white; border-radius: 24px; padding: 2rem; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; }
+  .modal h3 { font-size: 1.2rem; font-weight: 800; margin-bottom: 1.5rem; }
+  .modal-actions { display: flex; gap: 10px; margin-top: 1.5rem; }
+  .btn-secondary { flex: 1; padding: 12px; background: #f8f5f2; border: none; border-radius: 12px; font-family: inherit; font-size: 0.9rem; font-weight: 700; cursor: pointer; color: #888; }
+  .btn-save { flex: 2; padding: 12px; background: #e8625a; color: white; border: none; border-radius: 12px; font-family: inherit; font-size: 0.9rem; font-weight: 700; cursor: pointer; }
+
+  .item { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #f0ede9; }
+  .item:last-child { border-bottom: none; }
+  .item-check { width: 22px; height: 22px; border-radius: 50%; border: 2px solid #ddd; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+  .item-check.done { background: #2ecc71; border-color: #2ecc71; }
+  .item-check.done::after { content: '✓'; color: white; font-size: 12px; font-weight: 700; }
+  .item-text { flex: 1; }
+  .item-title { font-weight: 700; font-size: 0.95rem; }
+  .item-title.done-text { text-decoration: line-through; color: #bbb; }
+  .item-sub { font-size: 0.78rem; color: #aaa; margin-top: 2px; }
+  .item-delete { background: none; border: none; color: #ddd; cursor: pointer; font-size: 1.1rem; padding: 4px; }
+  .item-delete:hover { color: #e74c3c; }
+  .tag { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
+  .tag-moi { background: #fdf0ef; color: #e8625a; }
+  .tag-lui { background: #eef4ff; color: #3498db; }
+  .tag-nous { background: #f0fdf4; color: #27ae60; }
+  .empty-state { text-align: center; padding: 2rem; color: #ccc; font-weight: 600; }
+
+  .event-item { display: flex; gap: 14px; padding: 10px 0; border-bottom: 1px solid #f0ede9; align-items: flex-start; }
+  .event-item:last-child { border-bottom: none; }
+  .event-date { background: #fdf0ef; color: #e8625a; border-radius: 12px; padding: 8px 10px; text-align: center; min-width: 52px; flex-shrink: 0; }
+  .event-day { font-size: 1.3rem; font-weight: 800; line-height: 1; }
+  .event-month { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+  .event-info { flex: 1; }
+  .event-title { font-weight: 700; font-size: 0.95rem; }
+  .event-sub { font-size: 0.78rem; color: #aaa; margin-top: 2px; }
+
+  .budget-summary { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 1.5rem; }
+  .budget-card { background: #f8f5f2; border-radius: 14px; padding: 1rem; text-align: center; }
+  .budget-amount { font-size: 1.4rem; font-weight: 800; }
+  .budget-label { font-size: 0.75rem; color: #aaa; font-weight: 700; margin-top: 4px; }
+  .budget-positive { color: #27ae60; }
+  .budget-negative { color: #e8625a; }
+
+  .week-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+  .day-col { background: #f8f5f2; border-radius: 12px; padding: 8px 6px; min-height: 120px; }
+  .day-name { font-size: 0.7rem; font-weight: 800; text-align: center; color: #aaa; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+  .day-name.today { color: #e8625a; }
+  .planning-task { background: white; border-radius: 8px; padding: 5px 7px; margin-bottom: 5px; font-size: 0.72rem; font-weight: 700; border-left: 3px solid #e8625a; cursor: pointer; }
+  .planning-task.done { opacity: 0.5; text-decoration: line-through; }
+  .planning-task-moi { border-left-color: #e8625a; }
+  .planning-task-lui { border-left-color: #3498db; }
+
+  .category-section { margin-bottom: 1rem; }
+  .cat-title { font-size: 0.8rem; font-weight: 800; color: #aaa; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+
+  select, textarea { width: 100%; padding: 10px 14px; border: 1.5px solid #e8e4e0; border-radius: 12px; font-family: inherit; font-size: 0.9rem; outline: none; background: white; }
+  textarea { resize: vertical; min-height: 80px; }
+  select:focus, textarea:focus { border-color: #e8625a; }
+  .loading-spinner { text-align: center; padding: 2rem; color: #e8625a; font-weight: 700; }
+</style>
+</head>
+<body>
+
+<div class="auth-screen" id="authScreen">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <h1>NousDeux 💑</h1>
+      <p>Votre espace de vie partagé</p>
+    </div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchTab('login')">Connexion</button>
+      <button class="auth-tab" onclick="switchTab('signup')">Inscription</button>
+    </div>
+    <div id="authMsg"></div>
+    <div class="field"><label>Email</label><input type="email" id="authEmail" placeholder="ton@email.com"></div>
+    <div class="field"><label>Mot de passe</label><input type="password" id="authPassword" placeholder="••••••••"></div>
+    <div class="field" id="nameField" style="display:none"><label>Ton prénom</label><input type="text" id="authName" placeholder="Marie"></div>
+    <button class="btn-primary" id="authBtn" onclick="doAuth()">Se connecter</button>
+  </div>
+</div>
+
+<div class="app" id="appScreen">
+  <div class="topbar">
+    <h1>NousDeux 💑</h1>
+    <div class="topbar-right">
+      <span class="user-badge" id="userBadge">Chargement...</span>
+      <button class="logout-btn" onclick="logout()">Déconnexion</button>
+    </div>
+  </div>
+  <div class="main-content">
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="showTab('agenda')">📅 Agenda</button>
+      <button class="nav-tab" onclick="showTab('taches')">✅ Tâches</button>
+      <button class="nav-tab" onclick="showTab('planning')">🏠 Planning</button>
+      <button class="nav-tab" onclick="showTab('courses')">🛒 Courses</button>
+      <button class="nav-tab" onclick="showTab('budget')">💰 Budget</button>
+    </div>
+    <div id="tab-agenda"></div>
+    <div id="tab-taches" style="display:none"></div>
+    <div id="tab-planning" style="display:none"></div>
+    <div id="tab-courses" style="display:none"></div>
+    <div id="tab-budget" style="display:none"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h3 id="modalTitle">Ajouter</h3>
+    <div id="modalForm"></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal()">Annuler</button>
+      <button class="btn-save" onclick="saveModal()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPA_URL = 'https://gfbiaromzotayawelfjm.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdmYmlhcm9tem90YXlhd2VsZmptIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyMzg0NDQsImV4cCI6MjA5MjgxNDQ0NH0.2qNMUL2nZk1mCiR2Cz3QNTlJewky2UBivISBM5zv08g';
+const { createClient } = supabase;
+const sb = createClient(SUPA_URL, SUPA_KEY);
+
+let currentUser = null;
+let currentTab = 'agenda';
+let modalSaveCallback = null;
+
+let authMode = 'login';
+function switchTab(mode) {
+  authMode = mode;
+  document.querySelectorAll('.auth-tab').forEach((t,i) => t.classList.toggle('active', (mode==='login'&&i===0)||(mode==='signup'&&i===1)));
+  document.getElementById('nameField').style.display = mode === 'signup' ? 'block' : 'none';
+  document.getElementById('authBtn').textContent = mode === 'login' ? 'Se connecter' : "S'inscrire";
+  document.getElementById('authMsg').innerHTML = '';
+}
+
+async function doAuth() {
+  const email = document.getElementById('authEmail').value.trim();
+  const pwd = document.getElementById('authPassword').value;
+  const btn = document.getElementById('authBtn');
+  btn.disabled = true; btn.textContent = '...';
+  let res;
+  if (authMode === 'login') {
+    res = await sb.auth.signInWithPassword({ email, password: pwd });
+  } else {
+    const name = document.getElementById('authName').value.trim();
+    res = await sb.auth.signUp({ email, password: pwd, options: { data: { name } } });
+  }
+  btn.disabled = false;
+  btn.textContent = authMode === 'login' ? 'Se connecter' : "S'inscrire";
+  if (res.error) {
+    document.getElementById('authMsg').innerHTML = `<div class="msg error">${res.error.message}</div>`;
+  } else if (authMode === 'signup') {
+    document.getElementById('authMsg').innerHTML = `<div class="msg success">Compte créé ! Vérifie ton email puis connecte-toi.</div>`;
+  }
+}
+
+async function logout() {
+  await sb.auth.signOut();
+  document.getElementById('appScreen').classList.remove('visible');
+  document.getElementById('authScreen').style.display = 'flex';
+}
+
+sb.auth.onAuthStateChange(async (event, session) => {
+  if (session) {
+    currentUser = session.user;
+    const name = currentUser.user_metadata?.name || currentUser.email.split('@')[0];
+    document.getElementById('userBadge').textContent = '👤 ' + name;
+    document.getElementById('authScreen').style.display = 'none';
+    document.getElementById('appScreen').classList.add('visible');
+    renderTab(currentTab);
+  }
+});
+
+function showTab(tab) {
+  document.querySelectorAll('[id^="tab-"]').forEach(el => el.style.display = 'none');
+  document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + tab).style.display = 'block';
+  event.target.classList.add('active');
+  currentTab = tab;
+  renderTab(tab);
+}
+
+async function renderTab(tab) {
+  if (tab === 'agenda') await renderAgenda();
+  else if (tab === 'taches') await renderTaches();
+  else if (tab === 'planning') await renderPlanning();
+  else if (tab === 'courses') await renderCourses();
+  else if (tab === 'budget') await renderBudget();
+}
+
+function openModal(title, formHtml, saveCallback) {
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('modalForm').innerHTML = formHtml;
+  modalSaveCallback = saveCallback;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
+async function saveModal() { if (modalSaveCallback) await modalSaveCallback(); }
+
+async function renderAgenda() {
+  const el = document.getElementById('tab-agenda');
+  el.innerHTML = `<div class="loading-spinner">Chargement...</div>`;
+  const { data, error } = await sb.from('agenda').select('*').order('date', { ascending: true });
+  if (error) { el.innerHTML = `<div class="section-card"><p style="color:#e8625a;font-weight:700">⚠️ Erreur : ${error.message}</p></div>`; return; }
+  const now = new Date();
+  const upcoming = (data||[]).filter(e => new Date(e.date) >= new Date(now.toDateString()));
+  const months = ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
+  el.innerHTML = `<div class="section-card">
+    <div class="section-header"><span class="section-title">📅 Événements à venir</span><button class="add-btn" onclick="addAgenda()">+ Ajouter</button></div>
+    ${upcoming.length === 0 ? '<div class="empty-state">Aucun événement prévu</div>' : upcoming.map(e => {
+      const d = new Date(e.date);
+      return `<div class="event-item">
+        <div class="event-date"><div class="event-day">${d.getDate()}</div><div class="event-month">${months[d.getMonth()]}</div></div>
+        <div class="event-info"><div class="event-title">${e.title}</div><div class="event-sub">${e.heure||''} ${e.note ? '• '+e.note : ''}</div></div>
+        <button class="item-delete" onclick="deleteItem('agenda','${e.id}')">✕</button>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+function addAgenda() {
+  openModal('Nouvel événement', `
+    <div class="field"><label>Titre</label><input type="text" id="f_title" placeholder="Rendez-vous médecin..."></div>
+    <div class="field"><label>Date</label><input type="date" id="f_date"></div>
+    <div class="field"><label>Heure (optionnel)</label><input type="time" id="f_heure"></div>
+    <div class="field"><label>Note</label><textarea id="f_note" placeholder="Détails..."></textarea></div>
+  `, async () => {
+    const title = document.getElementById('f_title').value.trim();
+    const date = document.getElementById('f_date').value;
+    if (!title || !date) return alert('Titre et date requis');
+    await sb.from('agenda').insert({ user_id: currentUser.id, title, date, heure: document.getElementById('f_heure').value, note: document.getElementById('f_note').value });
+    closeModal(); renderTab('agenda');
+  });
+}
+
+async function renderTaches() {
+  const el = document.getElementById('tab-taches');
+  el.innerHTML = `<div class="loading-spinner">Chargement...</div>`;
+  const { data, error } = await sb.from('taches').select('*').order('created_at', { ascending: false });
+  if (error) { el.innerHTML = `<div class="section-card"><p style="color:#e8625a;font-weight:700">⚠️ Erreur : ${error.message}</p></div>`; return; }
+  const todo = (data||[]).filter(t => !t.done);
+  const done = (data||[]).filter(t => t.done);
+  el.innerHTML = `<div class="section-card">
+    <div class="section-header"><span class="section-title">✅ À faire (${todo.length})</span><button class="add-btn" onclick="addTache()">+ Ajouter</button></div>
+    ${todo.length === 0 ? '<div class="empty-state">Tout est fait ! 🎉</div>' : todo.map(t => taskItem(t)).join('')}
+  </div>
+  ${done.length > 0 ? `<div class="section-card"><div class="section-header"><span class="section-title" style="color:#bbb">✓ Terminées (${done.length})</span></div>${done.map(t => taskItem(t)).join('')}</div>` : ''}`;
+}
+
+function taskItem(t) {
+  const tag = t.assignee === 'moi' ? '<span class="tag tag-moi">Moi</span>' : t.assignee === 'lui' ? '<span class="tag tag-lui">Lui/Elle</span>' : '<span class="tag tag-nous">Nous</span>';
+  return `<div class="item">
+    <div class="item-check ${t.done?'done':''}" onclick="toggleTache('${t.id}',${t.done})"></div>
+    <div class="item-text"><div class="item-title ${t.done?'done-text':''}">${t.title}</div><div class="item-sub">${tag}</div></div>
+    <button class="item-delete" onclick="deleteItem('taches','${t.id}')">✕</button>
+  </div>`;
+}
+
+async function toggleTache(id, done) {
+  await sb.from('taches').update({ done: !done }).eq('id', id);
+  renderTab('taches');
+}
+
+function addTache() {
+  openModal('Nouvelle tâche', `
+    <div class="field"><label>Tâche</label><input type="text" id="f_title" placeholder="Appeler le médecin..."></div>
+    <div class="field"><label>Assigné à</label><select id="f_assignee"><option value="moi">Moi</option><option value="lui">Lui / Elle</option><option value="nous">Nous deux</option></select></div>
+  `, async () => {
+    const title = document.getElementById('f_title').value.trim();
+    if (!title) return alert('Titre requis');
+    await sb.from('taches').insert({ user_id: currentUser.id, title, assignee: document.getElementById('f_assignee').value, done: false });
+    closeModal(); renderTab('taches');
+  });
+}
+
+async function renderPlanning() {
+  const el = document.getElementById('tab-planning');
+  el.innerHTML = `<div class="loading-spinner">Chargement...</div>`;
+  const { data, error } = await sb.from('planning').select('*').order('jour');
+  if (error) { el.innerHTML = `<div class="section-card"><p style="color:#e8625a;font-weight:700">⚠️ Erreur : ${error.message}</p></div>`; return; }
+  const jours = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+  const today = new Date().getDay();
+  const todayIdx = today === 0 ? 6 : today - 1;
+  const todayStr = new Date().toISOString().split('T')[0];
+  const cols = jours.map((j, i) => {
+    const tasks = (data||[]).filter(t => t.jour === i);
+    return `<div class="day-col">
+      <div class="day-name ${i===todayIdx?'today':''}">${j}</div>
+      ${tasks.map(t => {
+        const doneToday = (t.done_dates||[]).includes(todayStr);
+        const cls = t.assignee === 'lui' ? 'planning-task-lui' : 'planning-task-moi';
+        return `<div class="planning-task ${cls} ${doneToday&&i===todayIdx?'done':''}" onclick="togglePlanning('${t.id}','${todayStr}',${JSON.stringify(t.done_dates||[])})">${t.title}</div>`;
+      }).join('')}
+    </div>`;
+  }).join('');
+  el.innerHTML = `<div class="section-card">
+    <div class="section-header"><span class="section-title">🏠 Planning ménager</span><button class="add-btn" onclick="addPlanning()">+ Ajouter</button></div>
+    <p style="font-size:0.8rem;color:#aaa;margin-bottom:1rem">Cliquez sur une tâche aujourd'hui pour la marquer comme faite</p>
+    <div class="week-grid">${cols}</div>
+  </div>`;
+}
+
+async function togglePlanning(id, dateStr, doneDates) {
+  const idx = doneDates.indexOf(dateStr);
+  if (idx >= 0) doneDates.splice(idx, 1); else doneDates.push(dateStr);
+  await sb.from('planning').update({ done_dates: doneDates }).eq('id', id);
+  renderTab('planning');
+}
+
+function addPlanning() {
+  const jours = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
+  openModal('Tâche ménagère', `
+    <div class="field"><label>Tâche</label><input type="text" id="f_title" placeholder="Passer l'aspirateur..."></div>
+    <div class="field"><label>Jour</label><select id="f_jour">${jours.map((j,i)=>`<option value="${i}">${j}</option>`).join('')}</select></div>
+    <div class="field"><label>Assigné à</label><select id="f_assignee"><option value="moi">Moi</option><option value="lui">Lui / Elle</option><option value="nous">Nous deux</option></select></div>
+  `, async () => {
+    const title = document.getElementById('f_title').value.trim();
+    if (!title) return alert('Titre requis');
+    await sb.from('planning').insert({ user_id: currentUser.id, title, jour: parseInt(document.getElementById('f_jour').value), assignee: document.getElementById('f_assignee').value });
+    closeModal(); renderTab('planning');
+  });
+}
+
+async function renderCourses() {
+  const el = document.getElementById('tab-courses');
+  el.innerHTML = `<div class="loading-spinner">Chargement...</div>`;
+  const { data, error } = await sb.from('courses').select('*').order('categorie');
+  if (error) { el.innerHTML = `<div class="section-card"><p style="color:#e8625a;font-weight:700">⚠️ Erreur : ${error.message}</p></div>`; return; }
+  const todo = (data||[]).filter(c => !c.done);
+  const done = (data||[]).filter(c => c.done);
+  const cats = [...new Set(todo.map(c => c.categorie))];
+  el.innerHTML = `<div class="section-card">
+    <div class="section-header"><span class="section-title">🛒 Liste de courses (${todo.length})</span><button class="add-btn" onclick="addCourse()">+ Ajouter</button></div>
+    ${todo.length === 0 ? '<div class="empty-state">Panier vide !</div>' : cats.map(cat => `
+      <div class="category-section"><div class="cat-title">${cat}</div>
+      ${todo.filter(c=>c.categorie===cat).map(c=>`<div class="item">
+        <div class="item-check" onclick="toggleCourse('${c.id}',${c.done})"></div>
+        <div class="item-text"><div class="item-title">${c.title}</div></div>
+        <button class="item-delete" onclick="deleteItem('courses','${c.id}')">✕</button>
+      </div>`).join('')}</div>`).join('')}
+    ${done.length > 0 ? `<div style="border-top:1px solid #f0ede9;padding-top:1rem;margin-top:0.5rem">
+      <div class="cat-title" style="margin-bottom:8px">✓ Dans le panier (${done.length})</div>
+      ${done.map(c=>`<div class="item">
+        <div class="item-check done" onclick="toggleCourse('${c.id}',${c.done})"></div>
+        <div class="item-text"><div class="item-title done-text">${c.title}</div></div>
+        <button class="item-delete" onclick="deleteItem('courses','${c.id}')">✕</button>
+      </div>`).join('')}
+      <button style="margin-top:12px;background:#fdf0ef;color:#e8625a;border:none;border-radius:10px;padding:8px 16px;font-family:inherit;font-weight:700;font-size:0.85rem;cursor:pointer" onclick="clearCourses()">Vider le panier ✓</button>
+    </div>` : ''}
+  </div>`;
+}
+
+async function toggleCourse(id, done) {
+  await sb.from('courses').update({ done: !done }).eq('id', id);
+  renderTab('courses');
+}
+
+async function clearCourses() {
+  await sb.from('courses').delete().eq('done', true);
+  renderTab('courses');
+}
+
+function addCourse() {
+  openModal('Ajouter un article', `
+    <div class="field"><label>Article</label><input type="text" id="f_title" placeholder="Tomates, lait..."></div>
+    <div class="field"><label>Catégorie</label><select id="f_cat">
+      <option value="🥦 Fruits & Légumes">🥦 Fruits & Légumes</option>
+      <option value="🥩 Viande & Poisson">🥩 Viande & Poisson</option>
+      <option value="🥛 Produits laitiers">🥛 Produits laitiers</option>
+      <option value="🍞 Boulangerie">🍞 Boulangerie</option>
+      <option value="🥫 Épicerie">🥫 Épicerie</option>
+      <option value="🧹 Entretien">🧹 Entretien</option>
+      <option value="🧴 Hygiène">🧴 Hygiène</option>
+      <option value="🍷 Boissons">🍷 Boissons</option>
+      <option value="❄️ Surgelés">❄️ Surgelés</option>
+    </select></div>
+  `, async () => {
+    const title = document.getElementById('f_title').value.trim();
+    if (!title) return alert('Article requis');
+    await sb.from('courses').insert({ user_id: currentUser.id, title, categorie: document.getElementById('f_cat').value, done: false });
+    closeModal(); renderTab('courses');
+  });
+}
+
+async function renderBudget() {
+  const el = document.getElementById('tab-budget');
+  el.innerHTML = `<div class="loading-spinner">Chargement...</div>`;
+  const { data, error } = await sb.from('budget').select('*').order('created_at', { ascending: false });
+  if (error) { el.innerHTML = `<div class="section-card"><p style="color:#e8625a;font-weight:700">⚠️ Erreur : ${error.message}</p></div>`; return; }
+  const depenses = (data||[]).filter(b => b.type === 'depense');
+  const revenus = (data||[]).filter(b => b.type === 'revenu');
+  const totalDep = depenses.reduce((a,b) => a + b.montant, 0);
+  const totalRev = revenus.reduce((a,b) => a + b.montant, 0);
+  const solde = totalRev - totalDep;
+  el.innerHTML = `<div class="section-card">
+    <div class="section-header"><span class="section-title">💰 Budget du mois</span><button class="add-btn" onclick="addBudget()">+ Ajouter</button></div>
+    <div class="budget-summary">
+      <div class="budget-card"><div class="budget-amount budget-positive">+${totalRev.toFixed(0)}€</div><div class="budget-label">Revenus</div></div>
+      <div class="budget-card"><div class="budget-amount budget-negative">-${totalDep.toFixed(0)}€</div><div class="budget-label">Dépenses</div></div>
+      <div class="budget-card"><div class="budget-amount ${solde>=0?'budget-positive':'budget-negative'}">${solde>=0?'+':''}${solde.toFixed(0)}€</div><div class="budget-label">Solde</div></div>
+    </div>
+    ${(data||[]).length === 0 ? '<div class="empty-state">Aucune transaction</div>' : (data||[]).slice(0,20).map(b=>`
+      <div class="item">
+        <div class="item-text"><div class="item-title">${b.title} <span style="font-size:0.75rem;color:#aaa">• ${b.categorie}</span></div><div class="item-sub">${new Date(b.created_at).toLocaleDateString('fr-FR')}</div></div>
+        <div style="font-weight:800;color:${b.type==='revenu'?'#27ae60':'#e8625a'}">${b.type==='revenu'?'+':'−'}${b.montant.toFixed(2)}€</div>
+        <button class="item-delete" onclick="deleteItem('budget','${b.id}')">✕</button>
+      </div>`).join('')}
+  </div>`;
+}
+
+function addBudget() {
+  openModal('Nouvelle transaction', `
+    <div class="field"><label>Description</label><input type="text" id="f_title" placeholder="Courses Leclerc..."></div>
+    <div class="field"><label>Montant (€)</label><input type="number" id="f_montant" placeholder="45.50" step="0.01" min="0"></div>
+    <div class="field"><label>Type</label><select id="f_type"><option value="depense">Dépense</option><option value="revenu">Revenu</option></select></div>
+    <div class="field"><label>Catégorie</label><select id="f_cat">
+      <option value="Alimentation">Alimentation</option>
+      <option value="Logement">Logement</option>
+      <option value="Transport">Transport</option>
+      <option value="Santé">Santé</option>
+      <option value="Loisirs">Loisirs</option>
+      <option value="Vêtements">Vêtements</option>
+      <option value="Salaire">Salaire</option>
+      <option value="Autre">Autre</option>
+    </select></div>
+  `, async () => {
+    const title = document.getElementById('f_title').value.trim();
+    const montant = parseFloat(document.getElementById('f_montant').value);
+    if (!title || isNaN(montant)) return alert('Titre et montant requis');
+    await sb.from('budget').insert({ user_id: currentUser.id, title, montant, type: document.getElementById('f_type').value, categorie: document.getElementById('f_cat').value });
+    closeModal(); renderTab('budget');
+  });
+}
+
+async function deleteItem(table, id) {
+  if (!confirm('Supprimer ?')) return;
+  await sb.from(table).delete().eq('id', id);
+  renderTab(currentTab);
+}
+
+document.getElementById('modalOverlay').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+</script>
+</body>
+</html>
